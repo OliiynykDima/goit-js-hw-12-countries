@@ -3,8 +3,11 @@ import debounce from 'lodash.debounce';
 import fetchCountries from './js/fetchCountries.js';
 import refs from './js/countryRefs.js';
 import countryItem from './templates/countryItem.hbs';
-import countryList from './templates/countryList.hbs'
-
+import countryList from './templates/countryList.hbs';
+import {error} from '@pnotify/core';
+import {attention} from './js/error.js';
+import '@pnotify/core/dist/PNotify.css';
+import '@pnotify/core/dist/BrightTheme.css';
 
 console.log(refs);
 
@@ -15,15 +18,18 @@ refs.input.addEventListener('input', debounce((event)=>{
     fetchCountries(query).then(data=>{
         console.log(data);
         if(data.length >= 2 && data.length <= 10){
-            const item = countryList(data);
-            refs.ul.innerHTML = '';
-        refs.ul.insertAdjacentHTML("beforeend", item);
+            insertElement(countryList, data, refs.ul);
+        }else if(data.length === 1){
+            insertElement(countryItem, data, refs.ul);
         }
         else{
-            const item = countryItem(data);
-            console.log(item);
-            refs.ul.innerHTML = '';
-            refs.ul.insertAdjacentHTML("beforeend", item);
+            error(attention);
         }
     });
-}, 1000))
+    refs.input.value = '';
+}, 1000),
+);
+function insertElement(template, data, place){
+    const elem = template(data);
+    place.insertAdjacentHTML("beforeend", elem);
+}
